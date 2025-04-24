@@ -342,13 +342,9 @@ elif page == "About":
     - **Humidity Sensors**:
       - **H_data**: Relative humidity measurement
       - **AH_data**: Absolute humidity measurement
-    
-    ### Contact
-    
-    For questions, feedback, or support, please contact the maintenance team.
     """)
 
 # Add footer with version information
 st.sidebar.markdown("---")
 st.sidebar.markdown("v1.0.0")
-st.sidebar.markdown("© 2023 Roasting Machine Quality Predictor")
+st.sidebar.markdown("© 2025 Roasting Machine Quality Predictor")
