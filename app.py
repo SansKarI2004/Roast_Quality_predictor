@@ -36,7 +36,8 @@ def load_model():
 def load_sample_data():
     """Load a sample of the training data to display"""
     try:
-        data = pd.read_csv('attached_assets/data_X_project.csv')
+        # Try to read the Excel file instead of CSV
+        data = pd.read_excel('attached_assets/new_files.xlsx')
         return data.head(10)  # Return just the first 10 rows
     except FileNotFoundError:
         st.warning("Sample data file not found. Sample data display is not available.")
