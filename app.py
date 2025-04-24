@@ -3,7 +3,13 @@ import pandas as pd
 import pickle
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 from datetime import datetime
+
+# Set style for plots
+plt.style.use('ggplot')
+sns.set_theme(style="whitegrid")
 
 # Set page title and layout
 st.set_page_config(
@@ -38,7 +44,7 @@ def load_sample_data():
     try:
         # Try to read the Excel file instead of CSV
         data = pd.read_excel('attached_assets/new_files.xlsx')
-        return data.head(10)  # Return just the first 10 rows
+        return data  # Return all rows for better visualization
     except FileNotFoundError:
         st.warning("Sample data file not found. Sample data display is not available.")
         return None
@@ -177,6 +183,8 @@ elif page == "View Sample Data":
     # Load and display sample data
     sample_data = load_sample_data()
     if sample_data is not None:
+        # Display the raw data table
+        st.subheader("Raw Data Sample (First 10 Rows)")
         st.dataframe(sample_data)
         
         # Display descriptions of features
@@ -190,6 +198,117 @@ elif page == "View Sample Data":
         Each temperature sensor group may correspond to a different area of the roasting machine, 
         helping monitor the roasting process at various points.
         """)
+        
+        # Add data visualizations
+        st.header("Data Visualizations")
+        
+        # Create tabs for different visualizations
+        viz_tabs = st.tabs(["Temperature Distribution", "Correlation Heatmap", "Time Series"])
+        
+        with viz_tabs[0]:
+            st.subheader("Temperature Sensor Distribution")
+            st.write("Distribution of temperature readings across different sensor groups")
+            
+            # Select a larger sample for plotting
+            plot_data = sample_data.copy()
+            
+            # Create a figure with multiple subplots for temperature groups
+            fig_temp = plt.figure(figsize=(10, 15))
+            
+            # Plot histograms for each temperature group
+            for i in range(1, 6):  # 5 temperature groups
+                group_cols = [f'T_data_{i}_{j}' for j in range(1, 4)]  # 3 sensors per group
+                for j, col in enumerate(group_cols):
+                    if col in plot_data.columns:
+                        plt.subplot(5, 3, (i-1)*3 + j + 1)
+                        plt.hist(plot_data[col], bins=20, alpha=0.7)
+                        plt.title(f'Sensor {col}')
+                        plt.xlabel('Temperature Value')
+                        plt.ylabel('Frequency')
+            
+            plt.tight_layout()
+            st.pyplot(fig_temp)
+            
+            # Add explanation
+            st.write("""
+            The histograms above show the distribution of temperature values for each sensor. 
+            This helps identify the normal operating ranges and potential outliers for each sensor location.
+            """)
+        
+        with viz_tabs[1]:
+            st.subheader("Correlation Between Sensors")
+            st.write("Heatmap showing correlations between different sensor readings")
+            
+            # Calculate correlations - exclude non-numeric columns like date_time
+            numeric_data = sample_data.select_dtypes(include=['float64', 'int64'])
+            corr_matrix = numeric_data.corr()
+            
+            # Create heatmap
+            fig_corr, ax = plt.subplots(figsize=(10, 8))
+            sns.heatmap(corr_matrix, annot=False, cmap='coolwarm', ax=ax)
+            plt.title('Correlation Between Sensors')
+            st.pyplot(fig_corr)
+            
+            # Add explanation
+            st.write("""
+            The correlation heatmap shows relationships between different sensors:
+            - Darker red indicates strong positive correlation (sensors move together)
+            - Darker blue indicates strong negative correlation (sensors move in opposite directions)
+            - White/light colors indicate weak or no correlation
+            
+            Strong correlations may indicate sensors in similar zones or affected by the same process variables.
+            """)
+        
+        with viz_tabs[2]:
+            st.subheader("Sensor Readings Over Time")
+            st.write("Time series plot of sensor readings")
+            
+            # Convert date_time to datetime if needed
+            if 'date_time' in sample_data.columns:
+                try:
+                    # Get more data for time series visualization
+                    time_plot_data = sample_data.copy()
+                    time_plot_data['date_time'] = pd.to_datetime(time_plot_data['date_time'])
+                    time_plot_data = time_plot_data.set_index('date_time')
+                    
+                    # Create time series plot
+                    fig_time = plt.figure(figsize=(12, 8))
+                    
+                    # Plot average temperature for each group
+                    for i in range(1, 6):
+                        group_cols = [f'T_data_{i}_{j}' for j in range(1, 4)]
+                        group_cols = [col for col in group_cols if col in time_plot_data.columns]
+                        if group_cols:
+                            # Calculate average for this group
+                            time_plot_data[f'T_Group_{i}_Avg'] = time_plot_data[group_cols].mean(axis=1)
+                            plt.plot(time_plot_data.index, time_plot_data[f'T_Group_{i}_Avg'], 
+                                    label=f'Temperature Group {i} Avg')
+                    
+                    # Add humidity if available
+                    if 'H_data' in time_plot_data.columns:
+                        plt.plot(time_plot_data.index, time_plot_data['H_data'], 
+                                label='Humidity', linestyle='--')
+                    
+                    plt.title('Sensor Readings Over Time')
+                    plt.xlabel('Time')
+                    plt.ylabel('Value')
+                    plt.legend()
+                    plt.grid(True, alpha=0.3)
+                    st.pyplot(fig_time)
+                    
+                except Exception as e:
+                    st.warning(f"Could not create time series plot: {e}")
+                    st.write("Time series visualization requires properly formatted datetime data.")
+            else:
+                st.info("Time series plot requires date_time column.")
+            
+            # Add explanation
+            st.write("""
+            The time series plot shows how sensor readings change over time, helping identify:
+            - Trends in temperature and humidity
+            - Cyclic patterns in the roasting process
+            - Anomalies or unusual events
+            """)
     else:
         st.info("Sample data is not available for display.")
 
