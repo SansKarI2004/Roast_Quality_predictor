@@ -153,7 +153,8 @@ if page == "Make Prediction":
                         st.write("""
                         **Interpretation:**
                         - Higher values indicate better quality
-                        - Values typically range from 0-10, with 10 being highest quality
+                        - Values typically range from 100-1000
+                        - Scores of 400 and above indicate good quality
                         """)
                 else:
                     st.write("Unexpected prediction format. Please check model output.")
