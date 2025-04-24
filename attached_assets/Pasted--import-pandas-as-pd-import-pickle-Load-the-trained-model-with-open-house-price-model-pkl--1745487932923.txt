@@ -1,0 +1,61 @@
+# import pandas as pd
+import pickle
+
+# Load the trained model
+# with open('house_price_model.pkl', 'rb') as file:
+#     model = pickle.load(file)
+
+# Take user input for each feature
+date_time = input("Enter the date and time (e.g., '2025-04-19 13:36:19'): ")
+T_data_1_1 = int(input("Enter T_data_1_1: "))
+T_data_1_2 = int(input("Enter T_data_1_2: "))
+T_data_1_3 = int(input("Enter T_data_1_3: "))
+T_data_2_1 = int(input("Enter T_data_2_1: "))
+T_data_2_2 = int(input("Enter T_data_2_2: "))
+T_data_2_3 = int(input("Enter T_data_2_3: "))
+T_data_3_1 = int(input("Enter T_data_3_1: "))
+T_data_3_2 = int(input("Enter T_data_3_2: "))
+T_data_3_3 = int(input("Enter T_data_3_3: "))
+T_data_4_1 = int(input("Enter T_data_4_1: "))
+T_data_4_2 = int(input("Enter T_data_4_2: "))
+T_data_4_3 = int(input("Enter T_data_4_3: "))
+T_data_5_1 = int(input("Enter T_data_5_1: "))
+T_data_5_2 = int(input("Enter T_data_5_2: "))
+T_data_5_3 = int(input("Enter T_data_5_3: "))
+H_data = float(input("Enter H_data: "))
+AH_data = float(input("Enter AH_data: "))
+
+# Create a DataFrame for the input
+input_data = pd.DataFrame([[
+    date_time, T_data_1_1, T_data_1_2, T_data_1_3,
+    T_data_2_1, T_data_2_2, T_data_2_3,
+    T_data_3_1, T_data_3_2, T_data_3_3,
+    T_data_4_1, T_data_4_2, T_data_4_3,
+    T_data_5_1, T_data_5_2, T_data_5_3,
+    H_data, AH_data
+]], columns=[
+    'date_time', 'T_data_1_1', 'T_data_1_2', 'T_data_1_3',
+    'T_data_2_1', 'T_data_2_2', 'T_data_2_3',
+    'T_data_3_1', 'T_data_3_2', 'T_data_3_3',
+    'T_data_4_1', 'T_data_4_2', 'T_data_4_3',
+    'T_data_5_1', 'T_data_5_2', 'T_data_5_3',
+    'H_data', 'AH_data'
+])
+
+# Convert 'date_time' to category
+input_data['date_time'] = pd.Series([date_time]).astype('category')
+
+# Ensure the column order matches the training data
+input_data = input_data[[
+    'date_time', 'T_data_1_1', 'T_data_1_2', 'T_data_1_3',
+    'T_data_2_1', 'T_data_2_2', 'T_data_2_3',
+    'T_data_3_1', 'T_data_3_2', 'T_data_3_3',
+    'T_data_4_1', 'T_data_4_2', 'T_data_4_3',
+    'T_data_5_1', 'T_data_5_2', 'T_data_5_3',
+    'H_data', 'AH_data'
+]]
+
+
+# Predict the output
+predicted_value = model.predict(input_data)
+print(f"The predicted value is: {predicted_value[0]}")

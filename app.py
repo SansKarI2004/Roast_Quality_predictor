@@ -114,18 +114,26 @@ if page == "Make Prediction":
                 # Create a DataFrame from the input data
                 input_df = pd.DataFrame([input_data])
                 
-                # The model expects all columns including date_time
-                # If necessary, add a placeholder for date_time 
-                if 'date_time' not in input_df.columns:
-                    input_df['date_time'] = current_datetime
+                # Add date_time column
+                input_df['date_time'] = current_datetime
+                
+                # Convert date_time to categorical type as required by the model
+                input_df['date_time'] = pd.Series([current_datetime]).astype('category')
                 
                 # Ensure column order matches what the model expects
-                # Extract features from the input data (excluding date_time if needed)
-                X = input_df.drop(columns=['date_time']) if 'date_time' in input_df.columns else input_df
+                expected_columns = [
+                    'date_time', 'T_data_1_1', 'T_data_1_2', 'T_data_1_3',
+                    'T_data_2_1', 'T_data_2_2', 'T_data_2_3',
+                    'T_data_3_1', 'T_data_3_2', 'T_data_3_3',
+                    'T_data_4_1', 'T_data_4_2', 'T_data_4_3',
+                    'T_data_5_1', 'T_data_5_2', 'T_data_5_3',
+                    'H_data', 'AH_data'
+                ]
+                input_df = input_df[expected_columns]
                 
                 # Make prediction
                 with st.spinner("Generating prediction..."):
-                    prediction = model.predict(X)
+                    prediction = model.predict(input_df)
                 
                 # Display prediction result
                 st.success("Prediction Complete!")
